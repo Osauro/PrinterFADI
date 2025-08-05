@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS FADI - Instalador Automático</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .installer-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-section {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .logo-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .version-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            color: #28a745;
+            margin-right: 1rem;
+            width: 20px;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
+        .requirements {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .step {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .tech-stack {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .tech-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem;
+            display: inline-block;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .download-btn:active {
+            animation: pulse 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="installer-container">
+                    <!-- Header -->
+                    <div class="logo-section">
+                        <div class="logo-icon">
+                            <i class="fas fa-cash-register"></i>
+                        </div>
+                        <h1 class="mb-3">POS FADI</h1>
+                        <p class="lead mb-0">Sistema de Punto de Venta Profesional</p>
+                        <div class="version-badge">
+                            <i class="fas fa-tag me-2"></i>Versión 1.0.0
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-4">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h3 class="mb-4">
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    Características Principales
+                                </h3>
+
+                                <ul class="feature-list">
+                                    <li>
+                                        <i class="fas fa-print feature-icon"></i>
+                                        <strong>Impresión Térmica</strong> - Compatible con impresoras POS 58mm/80mm
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-qrcode feature-icon"></i>
+                                        <strong>Códigos QR</strong> - Generación automática para recibos
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-cogs feature-icon"></i>
+                                        <strong>Configuración Visual</strong> - Interface web para configurar impresora
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-receipt feature-icon"></i>
+                                        <strong>Múltiples Formatos</strong> - Ventas, boletas, transferencias
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-cloud feature-icon"></i>
+                                        <strong>Base de Datos Remota</strong> - Conecta con servidor fadi.com.bo
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-rocket feature-icon"></i>
+                                        <strong>Servidor Embebido</strong> - PHP integrado, sin dependencias
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-sync-alt feature-icon"></i>
+                                        <strong>Auto-actualización</strong> - Descarga automática desde GitHub
+                                    </li>
+                                </ul>
+
+                                <div class="tech-stack">
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-code me-2"></i>Tecnologías
+                                    </h5>
+                                    <div class="tech-item">
+                                        <i class="fab fa-laravel text-danger me-2"></i>Laravel 10
+                                    </div>
+                                    <div class="tech-item">
+                                        <i class="fab fa-php text-primary me-2"></i>PHP 8.2
+                                    </div>
+                                    <div class="tech-item">
+                                        <i class="fab fa-bootstrap text-purple me-2"></i>Bootstrap 5
+                                    </div>
+                                    <div class="tech-item">
+                                        <i class="fas fa-database text-info me-2"></i>MySQL
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <h3 class="mb-4">
+                                    <i class="fas fa-download text-primary me-2"></i>
+                                    Instalación Automática
+                                </h3>
+
+                                <div class="requirements">
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Requisitos del Sistema
+                                    </h5>
+                                    <ul class="mb-0">
+                                        <li><strong>Sistema:</strong> Windows 10/11 (64-bit)</li>
+                                        <li><strong>Memoria:</strong> 2GB RAM mínimo</li>
+                                        <li><strong>Espacio:</strong> 500MB libres</li>
+                                        <li><strong>Red:</strong> Conexión a internet para instalación</li>
+                                        <li><strong>Impresora:</strong> POS térmica (opcional)</li>
+                                    </ul>
+                                </div>
+
+                                <div class="text-center mb-4">
+                                    <a href="pos-fadi-installer.exe" class="download-btn" onclick="trackDownload()">
+                                        <i class="fas fa-download me-2"></i>
+                                        Descargar Instalador
+                                        <div style="font-size: 0.9rem; margin-top: 0.5rem;">
+                                            (~15MB)
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Instalación automática:</strong> El instalador descargará el código fuente desde GitHub, instalará todas las dependencias y configurará el servidor local automáticamente.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pasos de instalación -->
+                        <div class="mt-5">
+                            <h3 class="mb-4 text-center">
+                                <i class="fas fa-list-ol text-primary me-2"></i>
+                                Proceso de Instalación
+                            </h3>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="step">
+                                        <div class="step-number">1</div>
+                                        <strong>Descarga</strong>
+                                        <p class="mb-0 mt-2">Descargar el instalador desde fadi.com.bo</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="step">
+                                        <div class="step-number">2</div>
+                                        <strong>Ejecutar</strong>
+                                        <p class="mb-0 mt-2">Ejecutar como administrador y seguir el asistente</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="step">
+                                        <div class="step-number">3</div>
+                                        <strong>¡Listo!</strong>
+                                        <p class="mb-0 mt-2">Acceder desde http://localhost:8080</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="mt-5">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <i class="fas fa-question-circle text-info me-2"></i>
+                                                Soporte Técnico
+                                            </h5>
+                                            <p class="card-text">¿Necesitas ayuda con la instalación o configuración?</p>
+                                            <a href="https://wa.me/59173010688" class="btn btn-success" target="_blank">
+                                                <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                                            </a>
+                                            <a href="mailto:soporte@fadi.com.bo" class="btn btn-outline-primary ms-2">
+                                                <i class="fas fa-envelope me-2"></i>Email
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <i class="fab fa-github text-dark me-2"></i>
+                                                Código Fuente
+                                            </h5>
+                                            <p class="card-text">El proyecto es de código abierto y está disponible en GitHub.</p>
+                                            <a href="https://github.com/Osauro/PrinterFADI" class="btn btn-dark" target="_blank">
+                                                <i class="fab fa-github me-2"></i>Ver en GitHub
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function trackDownload() {
+            // Tracking de descarga
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'download', {
+                    'event_category': 'installer',
+                    'event_label': 'pos-fadi-installer.exe'
+                });
+            }
+
+            // Mostrar mensaje de descarga
+            setTimeout(() => {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                alert.innerHTML = `
+                    <i class="fas fa-download me-2"></i>
+                    <strong>Descarga iniciada</strong><br>
+                    El instalador se descargará automáticamente.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(alert);
+
+                // Auto-remover después de 5 segundos
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 5000);
+            }, 1000);
+        }
+
+        // Animación de entrada
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.installer-container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(30px)';
+
+            setTimeout(() => {
+                container.style.transition = 'all 0.8s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
