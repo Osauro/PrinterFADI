@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Artisan;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
+use App\PrintConnectors\BluetoothPrintConnector;
 use Mike42\Escpos\Printer;
 use Illuminate\Support\Str;
 use Mike42\Escpos\EscposImage;
@@ -31,6 +33,8 @@ class PosController extends Controller
     public $tipoConexion;
     public $ipImpresora;
     public $puertoImpresora;
+    public $bluetoothAddress;
+    public $bluetoothName;
 
     public function __construct()
     {
@@ -46,10 +50,12 @@ class PosController extends Controller
         $this->mensajePie = env('PRINTER_FOOTER_MESSAGE', '___GRACIAS POR SU COMPRA___');
         $this->contacto = env('PRINTER_CONTACT', 'CEL: 73010688');
         
-        // Nuevas configuraciones para cPanel/Web
-        $this->tipoConexion = env('PRINTER_CONNECTION_TYPE', 'network'); // network, windows, file
+        // Nuevas configuraciones para cPanel/Web/Bluetooth
+        $this->tipoConexion = env('PRINTER_CONNECTION_TYPE', 'network'); // network, windows, file, bluetooth
         $this->ipImpresora = env('PRINTER_IP', '192.168.1.100');
         $this->puertoImpresora = env('PRINTER_PORT', 9100);
+        $this->bluetoothAddress = env('PRINTER_BLUETOOTH_ADDRESS', '00:11:22:33:44:55');
+        $this->bluetoothName = env('PRINTER_BLUETOOTH_NAME', 'POS-Printer');
         $this->mensajePie = env('PRINTER_FOOTER_MESSAGE', '___GRACIAS POR SU COMPRA___');
         $this->contacto = env('PRINTER_CONTACT', 'CEL: 73010688');
     }
@@ -71,6 +77,10 @@ class PosController extends Controller
             case 'file':
                 // Para servidores Linux/Unix - archivo de dispositivo
                 return new FilePrintConnector($this->impresora);
+                
+            case 'bluetooth':
+                // Para impresoras Bluetooth - multiplataforma
+                return new BluetoothPrintConnector($this->bluetoothAddress, $this->bluetoothName);
                 
             default:
                 // Por defecto usar red para cPanel
@@ -96,7 +106,9 @@ class PosController extends Controller
             'contacto' => $this->contacto,
             'tipo_conexion' => $this->tipoConexion,
             'ip_impresora' => $this->ipImpresora,
-            'puerto_impresora' => $this->puertoImpresora
+            'puerto_impresora' => $this->puertoImpresora,
+            'bluetooth_address' => $this->bluetoothAddress,
+            'bluetooth_name' => $this->bluetoothName
         ];
     }
 
@@ -123,7 +135,9 @@ class PosController extends Controller
                 'PRINTER_CONTACT' => '"' . $request->input('contact', 'CEL: 73010688') . '"',
                 'PRINTER_CONNECTION_TYPE' => $request->input('connection_type', 'network'),
                 'PRINTER_IP' => $request->input('printer_ip', '192.168.1.100'),
-                'PRINTER_PORT' => $request->input('printer_port', 9100)
+                'PRINTER_PORT' => $request->input('printer_port', 9100),
+                'PRINTER_BLUETOOTH_ADDRESS' => $request->input('bluetooth_address', '00:11:22:33:44:55'),
+                'PRINTER_BLUETOOTH_NAME' => $request->input('bluetooth_name', 'POS-Printer')
             ];
 
             // Actualizar cada configuración en el archivo .env

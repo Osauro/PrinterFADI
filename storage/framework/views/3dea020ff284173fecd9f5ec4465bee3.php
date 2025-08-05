@@ -117,19 +117,20 @@
                                             <label for="connectionType" class="form-label">Tipo de Conexión</label>
                                             <select class="form-select" id="connectionType" name="connection_type">
                                                 <option value="network" <?php echo e($configuracion['tipo_conexion'] == 'network' ? 'selected' : ''); ?>>Red/IP (cPanel/Web)</option>
+                                                <option value="bluetooth" <?php echo e($configuracion['tipo_conexion'] == 'bluetooth' ? 'selected' : ''); ?>>Bluetooth</option>
                                                 <option value="windows" <?php echo e($configuracion['tipo_conexion'] == 'windows' ? 'selected' : ''); ?>>Windows Local</option>
                                                 <option value="file" <?php echo e($configuracion['tipo_conexion'] == 'file' ? 'selected' : ''); ?>>Archivo/Linux</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-4" id="networkFields">
                                         <div class="mb-3">
                                             <label for="printerIp" class="form-label">IP de la Impresora</label>
                                             <input type="text" class="form-control" id="printerIp" name="printer_ip" value="<?php echo e($configuracion['ip_impresora']); ?>" placeholder="192.168.1.100">
                                             <div class="form-text">Solo para conexión de red</div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-4" id="networkPort">
                                         <div class="mb-3">
                                             <label for="printerPort" class="form-label">Puerto</label>
                                             <input type="number" class="form-control" id="printerPort" name="printer_port" value="<?php echo e($configuracion['puerto_impresora']); ?>" placeholder="9100">
@@ -138,9 +139,29 @@
                                     </div>
                                 </div>
 
-                                <div class="alert alert-info">
+                                <!-- Campos específicos para Bluetooth -->
+                                <div class="row" id="bluetoothFields" style="display: none;">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="bluetoothAddress" class="form-label">Dirección Bluetooth (MAC)</label>
+                                            <input type="text" class="form-control" id="bluetoothAddress" name="bluetooth_address" value="<?php echo e($configuracion['bluetooth_address']); ?>" placeholder="00:11:22:33:44:55">
+                                            <div class="form-text">Dirección MAC del dispositivo Bluetooth</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="bluetoothName" class="form-label">Nombre del Dispositivo</label>
+                                            <input type="text" class="form-control" id="bluetoothName" name="bluetooth_name" value="<?php echo e($configuracion['bluetooth_name']); ?>" placeholder="POS-Printer">
+                                            <div class="form-text">Nombre identificativo de la impresora</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info" id="connectionInfo">
                                     <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Configuración para cPanel:</strong> Use "Red/IP" e ingrese la dirección IP de su impresora térmica en la red local.
+                                    <span id="connectionInfoText">
+                                        <strong>Configuración para cPanel:</strong> Use "Red/IP" e ingrese la dirección IP de su impresora térmica en la red local.
+                                    </span>
                                 </div>
                             </div>
 
@@ -431,15 +452,33 @@
         // Gestión de tipo de conexión
         document.getElementById('connectionType').addEventListener('change', function() {
             const connectionType = this.value;
-            const ipField = document.getElementById('printerIp').closest('.col-md-4');
-            const portField = document.getElementById('printerPort').closest('.col-md-4');
+            const networkFields = document.getElementById('networkFields');
+            const networkPort = document.getElementById('networkPort');
+            const bluetoothFields = document.getElementById('bluetoothFields');
+            const connectionInfoText = document.getElementById('connectionInfoText');
             
-            if (connectionType === 'network') {
-                ipField.style.display = 'block';
-                portField.style.display = 'block';
-            } else {
-                ipField.style.display = 'none';
-                portField.style.display = 'none';
+            // Ocultar todos los campos primero
+            networkFields.style.display = 'none';
+            networkPort.style.display = 'none';
+            bluetoothFields.style.display = 'none';
+            
+            // Mostrar campos según el tipo de conexión
+            switch(connectionType) {
+                case 'network':
+                    networkFields.style.display = 'block';
+                    networkPort.style.display = 'block';
+                    connectionInfoText.innerHTML = '<strong>Red/IP:</strong> Configure la dirección IP y puerto de su impresora térmica en la red local.';
+                    break;
+                case 'bluetooth':
+                    bluetoothFields.style.display = 'block';
+                    connectionInfoText.innerHTML = '<strong>Bluetooth:</strong> Ingrese la dirección MAC de su impresora Bluetooth. Asegúrese de que esté emparejada con el sistema.';
+                    break;
+                case 'windows':
+                    connectionInfoText.innerHTML = '<strong>Windows Local:</strong> La impresora debe estar instalada en el sistema Windows local.';
+                    break;
+                case 'file':
+                    connectionInfoText.innerHTML = '<strong>Linux/Unix:</strong> Especifique la ruta del dispositivo de impresora (ej: /dev/usb/lp0).';
+                    break;
             }
         });
 
@@ -464,7 +503,11 @@
                 document.getElementById('connectionType').value = 'network';
                 document.getElementById('printerIp').value = '192.168.1.100';
                 document.getElementById('printerPort').value = '9100';
+                document.getElementById('bluetoothAddress').value = '00:11:22:33:44:55';
+                document.getElementById('bluetoothName').value = 'POS-Printer';
                 document.getElementById('connectionStatus').textContent = 'Conectada - POS80';
+                // Actualizar visibilidad de campos
+                document.getElementById('connectionType').dispatchEvent(new Event('change'));
             }
         });
     </script>
