@@ -42,6 +42,12 @@
         .status-disconnected {
             background-color: #dc3545;
         }
+        #bluetoothFields {
+            transition: all 0.3s ease;
+        }
+        #bluetoothFields.visible {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
@@ -450,17 +456,20 @@
         });
 
         // Gestión de tipo de conexión
-        document.getElementById('connectionType').addEventListener('change', function() {
-            const connectionType = this.value;
+        function updateConnectionFields() {
+            const connectionType = document.getElementById('connectionType').value;
             const networkFields = document.getElementById('networkFields');
             const networkPort = document.getElementById('networkPort');
             const bluetoothFields = document.getElementById('bluetoothFields');
             const connectionInfoText = document.getElementById('connectionInfoText');
             
+            console.log('Tipo de conexión seleccionado:', connectionType); // Debug
+            
             // Ocultar todos los campos primero
             networkFields.style.display = 'none';
             networkPort.style.display = 'none';
             bluetoothFields.style.display = 'none';
+            bluetoothFields.classList.remove('visible');
             
             // Mostrar campos según el tipo de conexión
             switch(connectionType) {
@@ -471,7 +480,9 @@
                     break;
                 case 'bluetooth':
                     bluetoothFields.style.display = 'block';
+                    bluetoothFields.classList.add('visible');
                     connectionInfoText.innerHTML = '<strong>Bluetooth:</strong> Ingrese la dirección MAC de su impresora Bluetooth. Asegúrese de que esté emparejada con el sistema.';
+                    console.log('Mostrando campos Bluetooth'); // Debug
                     break;
                 case 'windows':
                     connectionInfoText.innerHTML = '<strong>Windows Local:</strong> La impresora debe estar instalada en el sistema Windows local.';
@@ -480,11 +491,14 @@
                     connectionInfoText.innerHTML = '<strong>Linux/Unix:</strong> Especifique la ruta del dispositivo de impresora (ej: /dev/usb/lp0).';
                     break;
             }
-        });
+        }
+        
+        document.getElementById('connectionType').addEventListener('change', updateConnectionFields);
 
         // Inicializar visibilidad al cargar
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('connectionType').dispatchEvent(new Event('change'));
+            console.log('Página cargada, inicializando campos...'); // Debug
+            updateConnectionFields();
         });
 
         // Botón de restablecer
@@ -507,7 +521,7 @@
                 document.getElementById('bluetoothName').value = 'POS-Printer';
                 document.getElementById('connectionStatus').textContent = 'Conectada - POS80';
                 // Actualizar visibilidad de campos
-                document.getElementById('connectionType').dispatchEvent(new Event('change'));
+                updateConnectionFields();
             }
         });
     </script>
