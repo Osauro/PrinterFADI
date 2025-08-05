@@ -10,6 +10,8 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\Printer;
 use Illuminate\Support\Str;
 use Mike42\Escpos\EscposImage;
@@ -26,6 +28,9 @@ class PosController extends Controller
     public $marcaEmpresa;
     public $mensajePie;
     public $contacto;
+    public $tipoConexion;
+    public $ipImpresora;
+    public $puertoImpresora;
 
     public function __construct()
     {
@@ -40,6 +45,37 @@ class PosController extends Controller
         $this->marcaEmpresa = env('PRINTER_BRAND', '¤ FADI ¤');
         $this->mensajePie = env('PRINTER_FOOTER_MESSAGE', '___GRACIAS POR SU COMPRA___');
         $this->contacto = env('PRINTER_CONTACT', 'CEL: 73010688');
+        
+        // Nuevas configuraciones para cPanel/Web
+        $this->tipoConexion = env('PRINTER_CONNECTION_TYPE', 'network'); // network, windows, file
+        $this->ipImpresora = env('PRINTER_IP', '192.168.1.100');
+        $this->puertoImpresora = env('PRINTER_PORT', 9100);
+        $this->mensajePie = env('PRINTER_FOOTER_MESSAGE', '___GRACIAS POR SU COMPRA___');
+        $this->contacto = env('PRINTER_CONTACT', 'CEL: 73010688');
+    }
+
+    /**
+     * Obtener el conector de impresora según el tipo de conexión
+     */
+    private function obtenerConectorImpresora()
+    {
+        switch ($this->tipoConexion) {
+            case 'network':
+                // Para cPanel/servidores web - conexión por IP
+                return new NetworkPrintConnector($this->ipImpresora, $this->puertoImpresora);
+                
+            case 'windows':
+                // Para instalaciones locales Windows
+                return new WindowsPrintConnector($this->impresora);
+                
+            case 'file':
+                // Para servidores Linux/Unix - archivo de dispositivo
+                return new FilePrintConnector($this->impresora);
+                
+            default:
+                // Por defecto usar red para cPanel
+                return new NetworkPrintConnector($this->ipImpresora, $this->puertoImpresora);
+        }
     }
 
     /**
@@ -57,7 +93,10 @@ class PosController extends Controller
             'nombre_empresa' => $this->nombreEmpresa,
             'marca_empresa' => $this->marcaEmpresa,
             'mensaje_pie' => $this->mensajePie,
-            'contacto' => $this->contacto
+            'contacto' => $this->contacto,
+            'tipo_conexion' => $this->tipoConexion,
+            'ip_impresora' => $this->ipImpresora,
+            'puerto_impresora' => $this->puertoImpresora
         ];
     }
 
@@ -81,7 +120,10 @@ class PosController extends Controller
                 'PRINTER_COMPANY_NAME' => '"' . $request->input('company_name', 'DISTRIBUIDORA') . '"',
                 'PRINTER_BRAND' => '"' . $request->input('brand', '¤ FADI ¤') . '"',
                 'PRINTER_FOOTER_MESSAGE' => '"' . $request->input('footer_message', '___GRACIAS POR SU COMPRA___') . '"',
-                'PRINTER_CONTACT' => '"' . $request->input('contact', 'CEL: 73010688') . '"'
+                'PRINTER_CONTACT' => '"' . $request->input('contact', 'CEL: 73010688') . '"',
+                'PRINTER_CONNECTION_TYPE' => $request->input('connection_type', 'network'),
+                'PRINTER_IP' => $request->input('printer_ip', '192.168.1.100'),
+                'PRINTER_PORT' => $request->input('printer_port', 9100)
             ];
 
             // Actualizar cada configuración en el archivo .env
@@ -181,8 +223,7 @@ class PosController extends Controller
     public function imprimirPrueba()
     {
         try {
-            $nombreImpresora = $this->impresora;
-            $conector = new WindowsPrintConnector($nombreImpresora);
+            $conector = $this->obtenerConectorImpresora();
             $impresora = new Printer($conector);
 
             // Imprimir encabezado
@@ -231,7 +272,7 @@ class PosController extends Controller
     private function verificarConexionImpresora()
     {
         try {
-            $conector = new WindowsPrintConnector($this->impresora);
+            $conector = $this->obtenerConectorImpresora();
             $impresora = new Printer($conector);
             $impresora->close();
             return true;
@@ -242,8 +283,7 @@ class PosController extends Controller
 
     public function imprimirVenta(Venta $venta)
     {
-        $nombreImpresora = $this->impresora;
-        $conector = new WindowsPrintConnector($nombreImpresora);
+        $conector = $this->obtenerConectorImpresora();
         $impresora = new Printer($conector);
 
         // Imprimir encabezado usando configuración
@@ -335,8 +375,7 @@ class PosController extends Controller
 
     public function imprimirBoleta(Prestamo $prestamo)
     {
-        $nombreImpresora = $this->impresora;
-        $conector = new WindowsPrintConnector($nombreImpresora);
+        $conector = $this->obtenerConectorImpresora();
         $impresora = new Printer($conector);
 
         // Imprimir encabezado usando configuración
@@ -410,8 +449,7 @@ class PosController extends Controller
 
     public function imprimirTransferencia(Transferencia $transferencia)
     {
-        $nombreImpresora = $this->impresora;
-        $conector = new WindowsPrintConnector($nombreImpresora);
+        $conector = $this->obtenerConectorImpresora();
         $impresora = new Printer($conector);
 
         // Imprimir encabezado usando configuración

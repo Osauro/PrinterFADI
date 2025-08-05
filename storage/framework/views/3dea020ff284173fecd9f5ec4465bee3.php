@@ -107,6 +107,45 @@
 
                             <div class="config-section">
                                 <h6 class="text-muted mb-3">
+                                    <i class="fas fa-network-wired me-2"></i>
+                                    Configuración de Conexión
+                                </h6>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="connectionType" class="form-label">Tipo de Conexión</label>
+                                            <select class="form-select" id="connectionType" name="connection_type">
+                                                <option value="network" <?php echo e($configuracion['tipo_conexion'] == 'network' ? 'selected' : ''); ?>>Red/IP (cPanel/Web)</option>
+                                                <option value="windows" <?php echo e($configuracion['tipo_conexion'] == 'windows' ? 'selected' : ''); ?>>Windows Local</option>
+                                                <option value="file" <?php echo e($configuracion['tipo_conexion'] == 'file' ? 'selected' : ''); ?>>Archivo/Linux</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="printerIp" class="form-label">IP de la Impresora</label>
+                                            <input type="text" class="form-control" id="printerIp" name="printer_ip" value="<?php echo e($configuracion['ip_impresora']); ?>" placeholder="192.168.1.100">
+                                            <div class="form-text">Solo para conexión de red</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="printerPort" class="form-label">Puerto</label>
+                                            <input type="number" class="form-control" id="printerPort" name="printer_port" value="<?php echo e($configuracion['puerto_impresora']); ?>" placeholder="9100">
+                                            <div class="form-text">Puerto TCP (típicamente 9100)</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Configuración para cPanel:</strong> Use "Red/IP" e ingrese la dirección IP de su impresora térmica en la red local.
+                                </div>
+                            </div>
+
+                            <div class="config-section">
+                                <h6 class="text-muted mb-3">
                                     <i class="fas fa-building me-2"></i>
                                     Información de la Empresa
                                 </h6>
@@ -389,6 +428,26 @@
             }, 3000);
         });
 
+        // Gestión de tipo de conexión
+        document.getElementById('connectionType').addEventListener('change', function() {
+            const connectionType = this.value;
+            const ipField = document.getElementById('printerIp').closest('.col-md-4');
+            const portField = document.getElementById('printerPort').closest('.col-md-4');
+            
+            if (connectionType === 'network') {
+                ipField.style.display = 'block';
+                portField.style.display = 'block';
+            } else {
+                ipField.style.display = 'none';
+                portField.style.display = 'none';
+            }
+        });
+
+        // Inicializar visibilidad al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('connectionType').dispatchEvent(new Event('change'));
+        });
+
         // Botón de restablecer
         document.getElementById('resetConfig').addEventListener('click', function() {
             if (confirm('¿Estás seguro de que quieres restablecer la configuración?')) {
@@ -402,6 +461,9 @@
                 document.getElementById('brandName').value = '¤ FADI ¤';
                 document.getElementById('footerMessage').value = '___GRACIAS POR SU COMPRA___';
                 document.getElementById('contact').value = 'CEL: 73010688';
+                document.getElementById('connectionType').value = 'network';
+                document.getElementById('printerIp').value = '192.168.1.100';
+                document.getElementById('printerPort').value = '9100';
                 document.getElementById('connectionStatus').textContent = 'Conectada - POS80';
             }
         });

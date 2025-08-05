@@ -15,6 +15,21 @@
 
 **ELIMINADAS**: sanctum, tinker, barcode, todas las dev-dependencies
 
+### 📦 Conectores de Impresora (MULTI-PLATAFORMA)
+```php
+// Soporte completo para diferentes entornos
+use Mike42\Escpos\PrintConnectors\{
+    NetworkPrintConnector,     // ✅ Para cPanel/Web (IP de red)
+    WindowsPrintConnector,     // ✅ Para Windows local
+    FilePrintConnector         // ✅ Para Linux/Unix
+};
+```
+
+### 🌐 Configuración Adaptativa
+- ✅ **Localhost**: WindowsPrintConnector para desarrollo
+- ✅ **cPanel**: NetworkPrintConnector para producción web
+- ✅ **Linux**: FilePrintConnector para servidores Unix
+
 ### 📂 Estructura de Archivos (ULTRA-MINIMALISTA)
 
 #### ✅ **CONSERVADOS** (Esenciales)
@@ -105,5 +120,14 @@ El sistema está **TOTALMENTE MINIMALIZADO** y optimizado para:
 - ✅ Funcionamiento específico para impresión POS
 - ✅ Mantenimiento simplificado
 - ✅ Sin dependencias innecesarias
+- ✅ **Despliegue en cPanel** con impresión remota
+- ✅ **Multi-entorno** (localhost, web, Linux)
 
-**Status**: ✨ **LISTO PARA PRODUCCIÓN** ✨
+**Status**: ✨ **LISTO PARA PRODUCCIÓN EN CPANEL** ✨
+
+## 📚 Documentación de Despliegue
+
+- `DEPLOY-CPANEL.md` - Guía completa de despliegue en cPanel
+- `README-CPANEL.md` - Instrucciones rápidas de instalación
+- `.env.cpanel` - Configuración de ejemplo para producción
+- `install-cpanel.sh` - Script de instalación automática
