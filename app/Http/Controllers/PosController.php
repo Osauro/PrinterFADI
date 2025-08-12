@@ -105,7 +105,6 @@ class PosController extends Controller
                 'message' => 'Configuración guardada correctamente',
                 'configuracion' => $configuraciones
             ]);
-
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -219,7 +218,6 @@ class PosController extends Controller
             $impresora->close();
 
             return response()->json(['success' => true, 'message' => 'Impresión de prueba enviada correctamente']);
-
         } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
@@ -435,8 +433,7 @@ class PosController extends Controller
         $impresora->feed(1);
         $impresora->text("====== P R O D U C T O S ======\n");
         $impresora->feed(1);
-        $impresora->setJustification(Printer::JUSTIFY_RIGHT);
-
+        $impresora->setJustification(Printer::JUSTIFY_LEFT);
         foreach ($transferencia->items as $item) {
             $cantidad = '';
             if ($item->enteros) {
@@ -445,8 +442,12 @@ class PosController extends Controller
             if ($item->unidades) {
                 $cantidad .= $item->unidades . "u ";
             }
-            $producto = Str::of(Str::padRight($cantidad . $item->producto->nombre, 50, '.'))->limit($this->papel);
+            $producto = Str::of(Str::padRight($cantidad . $item->producto->nombre, 70, '.'))->limit($this->papel);
             $impresora->text($producto . "\n");
+        }
+        $impresora->feed(2);
+        if ($this->cortarAutomatico) {
+            $impresora->cut();
         }
         $impresora->close();
     }

@@ -5,20 +5,69 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+
+# IDEs y editores
 /.fleet
 /.idea
 /.nova
 /.phpunit.cache
 /.vscode
 /.zed
+
+# Archivos de configuración específicos
 /auth.json
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Node.js (no necesario para POS minimalista)
+/node_modules
+/public/build
+/public/hot
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Laravel Storage (archivos temporales)
+/public/storage
+/storage/*.key
+/storage/pail
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Composer
+/vendor
+
+# Archivos innecesarios para POS
+/tests
+/database/migrations/*.php.bak
+/database/factories
+/database/seeders/*
+!database/seeders/.gitkeep
+
+# Archivos de compilación y cache
+*.cache
+*.tmp
+/bootstrap/cache/*
+!bootstrap/cache/.gitkeep
+
+# Archivos de desarrollo no necesarios
+webpack.mix.js
+package.json
+package-lock.json
+yarn.lock
+vite.config.js
+
+# Carpetas específicas que no necesitamos
+/web-installer
+/resources/css
+/resources/js
+/resources/sass
+/resources/lang/*
+!resources/lang/es
+
+# Archivos de Laravel que no necesitamos para POS
+artisan.bat
+server.php
