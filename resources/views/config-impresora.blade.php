@@ -212,6 +212,66 @@
                     </div>
                 </div>
 
+                <!-- Panel de Base de Datos -->
+                <div class="card mt-4">
+                    <div class="card-header {{ $db_conectada ? 'bg-success' : 'bg-danger' }} text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-database me-2"></i>
+                            Configuración de Base de Datos
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="alert {{ $db_conectada ? 'alert-success' : 'alert-danger' }} mb-3">
+                                    <i class="fas {{ $db_conectada ? 'fa-check-circle' : 'fa-times-circle' }} me-2"></i>
+                                    <strong>Estado:</strong> 
+                                    <span class="status-indicator {{ $db_conectada ? 'status-connected' : 'status-disconnected' }}"></span>
+                                    {{ $db_mensaje }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <th width="40%">Driver:</th>
+                                            <td><code>{{ $db_config['driver'] }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Host:</th>
+                                            <td><code>{{ $db_config['host'] }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Puerto:</th>
+                                            <td><code>{{ $db_config['port'] }}</code></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <th width="40%">Base de Datos:</th>
+                                            <td><code>{{ $db_config['database'] }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Usuario:</th>
+                                            <td><code>{{ $db_config['username'] }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Contraseña:</th>
+                                            <td><code>{{ $db_config['password'] }}</code></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Panel de información -->
                 <div class="card mt-4">
                     <div class="card-header bg-info text-white">

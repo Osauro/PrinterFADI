@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\Printer;
 use Illuminate\Support\Str;
@@ -168,9 +169,25 @@ class PosController extends Controller
      */
     public function mostrarConfiguracion()
     {
+        // Obtener variables de configuración de la base de datos desde .env
+        $dbConfig = [
+            'driver' => env('DB_CONNECTION', 'mysql'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD') ? '******' : '' // Ocultar la contraseña real
+        ];
+
+        // Verificar conexión a la base de datos
+        $dbConectada = $this->verificarConexionBaseDatos();
+        
         return view('config-impresora', [
             'configuracion' => $this->obtenerConfiguracion(),
-            'estado_conexion' => $this->verificarConexionImpresora()
+            'estado_conexion' => $this->verificarConexionImpresora(),
+            'db_config' => $dbConfig,
+            'db_conectada' => $dbConectada,
+            'db_mensaje' => $dbConectada ? 'Conexión exitosa' : 'Error de conexión'
         ]);
     }
 
@@ -232,6 +249,19 @@ class PosController extends Controller
             $conector = new WindowsPrintConnector($this->impresora);
             $impresora = new Printer($conector);
             $impresora->close();
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Verificar la conexión a la base de datos
+     */
+    private function verificarConexionBaseDatos()
+    {
+        try {
+            DB::connection()->getPdo();
             return true;
         } catch (Exception $e) {
             return false;
