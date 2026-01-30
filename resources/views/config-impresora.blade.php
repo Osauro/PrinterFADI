@@ -77,11 +77,31 @@
                                         <div class="mb-3">
                                             <label for="printerName" class="form-label">Nombre de la Impresora</label>
                                             <select class="form-select" id="printerName" name="printer_name">
-                                                <option value="POS58" {{ $configuracion['impresora'] == 'POS58' ? 'selected' : '' }}>POS58 (58mm)</option>
-                                                <option value="POS80" {{ $configuracion['impresora'] == 'POS80' ? 'selected' : '' }}>POS80 (80mm)</option>
-                                                <option value="EPSON TM-T20" {{ $configuracion['impresora'] == 'EPSON TM-T20' ? 'selected' : '' }}>EPSON TM-T20</option>
-                                                <option value="EPSON TM-T88" {{ $configuracion['impresora'] == 'EPSON TM-T88' ? 'selected' : '' }}>EPSON TM-T88</option>
+                                                @if(count($impresoras_disponibles) > 0)
+                                                    @foreach($impresoras_disponibles as $impresora)
+                                                        <option value="{{ $impresora['nombre'] }}" 
+                                                            {{ $configuracion['impresora'] == $impresora['nombre'] ? 'selected' : '' }}>
+                                                            {{ $impresora['nombre'] }} 
+                                                            @if($impresora['disponible'])
+                                                                ✓
+                                                            @else
+                                                                ✗
+                                                            @endif
+                                                        </option>
+                                                    @endforeach
+                                                @else
+                                                    <option value="{{ $configuracion['impresora'] }}" selected>
+                                                        {{ $configuracion['impresora'] }} (Actual)
+                                                    </option>
+                                                @endif
                                             </select>
+                                            <small class="text-muted">
+                                                @if(count($impresoras_disponibles) > 0)
+                                                    {{ count($impresoras_disponibles) }} impresora(s) detectada(s)
+                                                @else
+                                                    No se detectaron impresoras. Haz clic en "Detectar Impresoras" para actualizar.
+                                                @endif
+                                            </small>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -440,13 +460,66 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Detectando...';
             btn.disabled = true;
 
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-check me-2"></i>Detectadas';
+            fetch('{{ url('/detectar-impresoras') }}', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.impresoras.length > 0) {
+                    // Actualizar el selector con las impresoras detectadas
+                    const printerSelect = document.getElementById('printerName');
+                    const currentValue = printerSelect.value;
+                    
+                    // Limpiar el selector
+                    printerSelect.innerHTML = '';
+                    
+                    // Agregar todas las impresoras detectadas
+                    data.impresoras.forEach(imp => {
+                        const option = document.createElement('option');
+                        option.value = imp.nombre;
+                        option.textContent = imp.nombre + (imp.disponible ? ' ✓' : ' ✗');
+                        if (imp.nombre === currentValue) {
+                            option.selected = true;
+                        }
+                        printerSelect.appendChild(option);
+                    });
+                    
+                    // Construir mensaje con las impresoras encontradas
+                    let mensaje = `Se detectaron ${data.total} impresora(s):\n\n`;
+                    data.impresoras.forEach((imp, index) => {
+                        const estado = imp.disponible ? '✓ Disponible' : '✗ No disponible';
+                        mensaje += `${index + 1}. ${imp.nombre}\n   Estado: ${estado}\n   Driver: ${imp.driver}\n\n`;
+                    });
+                    
+                    alert(mensaje);
+                    
+                    btn.innerHTML = '<i class="fas fa-check me-2"></i>Actualizadas';
+                } else {
+                    alert(data.message || 'No se detectaron impresoras');
+                    btn.innerHTML = '<i class="fas fa-times me-2"></i>No detectadas';
+                }
+                
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                }, 1000);
-            }, 3000);
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al detectar impresoras: ' + error.message);
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
         });
 
         // Botón de restablecer

@@ -20,6 +20,7 @@ Route::get('/', [PosController::class, 'mostrarConfiguracion'])->name('home');
 // Rutas para configuración
 Route::post('/guardar-config', [PosController::class, 'guardarConfiguracion'])->name('guardar-config');
 Route::post('/test-print', [PosController::class, 'imprimirPrueba'])->name('test-print');
+Route::get('/detectar-impresoras', [PosController::class, 'detectarImpresoras'])->name('detectar-impresoras');
 
 // Rutas de impresión
 Route::get('/venta/{venta}', [PosController::class, 'imprimirVenta'])->name('venta');

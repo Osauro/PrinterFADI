@@ -182,12 +182,16 @@ class PosController extends Controller
         // Verificar conexión a la base de datos
         $dbConectada = $this->verificarConexionBaseDatos();
         
+        // Obtener impresoras disponibles
+        $impresorasDisponibles = $this->obtenerImpresorasDisponibles();
+        
         return view('config-impresora', [
             'configuracion' => $this->obtenerConfiguracion(),
             'estado_conexion' => $this->verificarConexionImpresora(),
             'db_config' => $dbConfig,
             'db_conectada' => $dbConectada,
-            'db_mensaje' => $dbConectada ? 'Conexión exitosa' : 'Error de conexión'
+            'db_mensaje' => $dbConectada ? 'Conexión exitosa' : 'Error de conexión',
+            'impresoras_disponibles' => $impresorasDisponibles
         ]);
     }
 
@@ -266,6 +270,202 @@ class PosController extends Controller
         } catch (Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Obtener impresoras disponibles (método interno)
+     */
+    private function obtenerImpresorasDisponibles()
+    {
+        try {
+            // Ejecutar comando de PowerShell para obtener impresoras instaladas (ruta completa)
+            $powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+            $command = $powershell . ' -NoProfile -NonInteractive -Command "Get-Printer | Select-Object Name, PrinterStatus, DriverName | ConvertTo-Json -Compress" 2>&1';
+            
+            // Ejecutar comando y capturar salida
+            $output = shell_exec($command);
+            
+            if (empty($output)) {
+                return [];
+            }
+            
+            // Limpiar output y buscar el JSON
+            $output = trim($output);
+            
+            // Buscar el inicio del JSON (puede estar con basura antes)
+            $jsonStart = strpos($output, '[');
+            if ($jsonStart === false) {
+                $jsonStart = strpos($output, '{');
+            }
+            
+            if ($jsonStart === false) {
+                return [];
+            }
+            
+            $jsonOutput = substr($output, $jsonStart);
+
+            // Decodificar JSON
+            $impresoras = json_decode($jsonOutput, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($impresoras)) {
+                return [];
+            }
+            
+            // Si solo hay una impresora, PowerShell no devuelve un array
+            if (isset($impresoras['Name'])) {
+                $impresoras = [$impresoras];
+            }
+
+            // Filtrar y formatear la información de las impresoras
+            $impresorasDisponibles = [];
+            foreach ($impresoras as $impresora) {
+                // Filtrar el encabezado "Name" que a veces viene en la salida
+                if (!isset($impresora['Name']) || $impresora['Name'] === 'Name' || $impresora['Name'] === 'DriverName') {
+                    continue;
+                }
+                
+                $estado = $impresora['PrinterStatus'] ?? 999;
+                $impresorasDisponibles[] = [
+                    'nombre' => $impresora['Name'],
+                    'estado' => $this->traducirEstadoPowerShell($estado),
+                    'driver' => $impresora['DriverName'] ?? 'Desconocido',
+                    'disponible' => in_array($estado, [0, 3]) // 0=Normal, 3=Idle
+                ];
+            }
+
+            return $impresorasDisponibles;
+            
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Detectar impresoras disponibles en Windows (API endpoint)
+     */
+    public function detectarImpresoras()
+    {
+        try {
+            $impresorasDisponibles = $this->obtenerImpresorasDisponibles();
+
+            return response()->json([
+                'success' => count($impresorasDisponibles) > 0,
+                'message' => count($impresorasDisponibles) . ' impresora(s) detectada(s)',
+                'impresoras' => $impresorasDisponibles,
+                'total' => count($impresorasDisponibles)
+            ]);
+            
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al detectar impresoras: ' . $e->getMessage(),
+                'impresoras' => []
+            ]);
+        }
+    }
+
+    /**
+     * Detectar impresoras usando WMI como método alternativo
+     */
+    private function detectarImpresorasWMI()
+    {
+        try {
+            $command = 'wmic printer get name,printerstatus,drivername /format:csv';
+            exec($command . ' 2>&1', $outputLines, $returnCode);
+            
+            $impresorasDisponibles = [];
+            
+            // Procesar salida CSV
+            if ($returnCode === 0 && count($outputLines) > 1) {
+                // Saltar la primera línea (encabezado) y líneas vacías
+                foreach ($outputLines as $index => $line) {
+                    if ($index === 0 || empty(trim($line))) {
+                        continue;
+                    }
+                    
+                    $campos = str_getcsv($line);
+                    if (count($campos) >= 3 && !empty(trim($campos[2]))) {
+                        $impresorasDisponibles[] = [
+                            'nombre' => trim($campos[2]) ?? 'Desconocida',
+                            'estado' => $this->traducirEstadoWMI(trim($campos[3] ?? '')),
+                            'driver' => trim($campos[1]) ?? 'Desconocido',
+                            'disponible' => true
+                        ];
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => count($impresorasDisponibles) > 0,
+                'message' => count($impresorasDisponibles) . ' impresora(s) detectada(s)',
+                'impresoras' => $impresorasDisponibles,
+                'total' => count($impresorasDisponibles)
+            ]);
+            
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudieron detectar impresoras. Verifica que tienes impresoras instaladas.',
+                'impresoras' => []
+            ]);
+        }
+    }
+
+    /**
+     * Traducir estado de impresora de PowerShell (valores numéricos)
+     */
+    private function traducirEstadoPowerShell($estado)
+    {
+        $estados = [
+            0 => 'Disponible',
+            1 => 'Otro',
+            2 => 'Desconocido',
+            3 => 'Inactiva',
+            4 => 'Imprimiendo',
+            5 => 'Preparándose',
+            6 => 'Detenida',
+            7 => 'Desconectada'
+        ];
+        
+        return $estados[$estado] ?? 'Estado ' . $estado;
+    }
+
+    /**
+     * Traducir estado de impresora
+     */
+    private function traducirEstadoImpresora($estado)
+    {
+        $traducciones = [
+            'Normal' => 'Normal',
+            'Idle' => 'Inactiva',
+            'Ready' => 'Lista',
+            'Printing' => 'Imprimiendo',
+            'Offline' => 'Desconectada',
+            'Error' => 'Error',
+            'Unknown' => 'Desconocido'
+        ];
+        
+        return $traducciones[$estado] ?? $estado;
+    }
+
+    /**
+     * Traducir estado WMI
+     */
+    private function traducirEstadoWMI($estado)
+    {
+        if (empty($estado)) return 'Desconocido';
+        
+        $estadoNum = intval($estado);
+        $estados = [
+            1 => 'Otro',
+            2 => 'Desconocido',
+            3 => 'Inactiva',
+            4 => 'Imprimiendo',
+            5 => 'Preparándose',
+            7 => 'Desconectada'
+        ];
+        
+        return $estados[$estadoNum] ?? 'Disponible';
     }
 
     public function imprimirVenta(Venta $venta)
