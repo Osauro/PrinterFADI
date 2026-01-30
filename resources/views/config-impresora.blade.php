@@ -336,7 +336,29 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Configurar CSRF token para AJAX
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        // Función para obtener token CSRF actualizado
+        async function refreshCsrfToken() {
+            try {
+                const response = await fetch('{{ url("/") }}', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newToken = doc.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                if (newToken) {
+                    csrfToken = newToken;
+                    document.querySelector('meta[name="csrf-token"]').setAttribute('content', newToken);
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error al actualizar token CSRF:', error);
+            }
+            return false;
+        }
 
         // Sincronizar el selector de impresora con el ancho del papel
         document.getElementById('printerName').addEventListener('change', function() {
@@ -366,7 +388,7 @@
         });
 
         // Manejar el formulario para guardar configuración
-        document.getElementById('printerConfigForm').addEventListener('submit', function(e) {
+        document.getElementById('printerConfigForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const submitBtn = this.querySelector('button[type="submit"]');
@@ -378,77 +400,106 @@
             // Recopilar datos del formulario
             const formData = new FormData(this);
 
-            fetch('{{ url("/guardar-config") }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: formData
-            })
-            .then(response => {
+            try {
+                let response = await fetch('{{ url("/guardar-config") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                // Si falla con 419, intentar refrescar el token y reintentar
+                if (response.status === 419) {
+                    const tokenRefreshed = await refreshCsrfToken();
+                    if (tokenRefreshed) {
+                        response = await fetch('{{ url("/guardar-config") }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: formData,
+                            credentials: 'same-origin'
+                        });
+                    }
+                }
+
                 if (!response.ok) {
                     throw new Error('Error del servidor: ' + response.status);
                 }
-                return response.json();
-            })
-            .then(data => {
+                
+                const data = await response.json();
+                
                 if (data.success) {
                     submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Guardado';
-
-                    // Mostrar mensaje de éxito
                     alert('Configuración guardada correctamente');
 
                     setTimeout(() => {
                         submitBtn.innerHTML = originalText;
                         submitBtn.disabled = false;
-
-                        // Recargar página para mostrar nueva configuración
                         window.location.reload();
                     }, 1000);
                 } else {
                     throw new Error(data.message || 'Error desconocido');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error completo:', error);
                 let mensaje = 'Error al guardar configuración: ';
                 
                 if (error.message.includes('Failed to fetch')) {
-                    mensaje += 'No se puede conectar al servidor. Verifica que Laravel esté ejecutándose.';
+                    mensaje += 'No se puede conectar al servidor. Asegúrate de estar en http://pos.test';
                 } else {
                     mensaje += error.message;
                 }
                 
                 alert(mensaje);
-
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
-            });
+            }
         });
 
         // Botón de prueba de impresión
-        document.getElementById('testPrint').addEventListener('click', function() {
+        document.getElementById('testPrint').addEventListener('click', async function() {
             const btn = this;
             const originalText = btn.innerHTML;
 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Imprimiendo...';
             btn.disabled = true;
 
-            fetch('{{ url("/test-print") }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
+            try {
+                let response = await fetch('{{ url("/test-print") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                // Si falla con 419, intentar refrescar el token y reintentar
+                if (response.status === 419) {
+                    const tokenRefreshed = await refreshCsrfToken();
+                    if (tokenRefreshed) {
+                        response = await fetch('{{ url("/test-print") }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        });
+                    }
                 }
-            })
-            .then(response => {
+
                 if (!response.ok) {
                     throw new Error('Error del servidor: ' + response.status);
                 }
-                return response.json();
-            })
-            .then(data => {
+                
+                const data = await response.json();
+                
                 if (data.success) {
                     btn.innerHTML = '<i class="fas fa-check me-2"></i>Enviado';
                     alert('Impresión de prueba enviada correctamente');
@@ -460,22 +511,20 @@
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 }, 2000);
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
                 let mensaje = 'Error en la impresión: ';
                 
                 if (error.message.includes('Failed to fetch')) {
-                    mensaje += 'No se puede conectar al servidor. Verifica que Laravel esté ejecutándose.';
+                    mensaje += 'No se puede conectar al servidor. Asegúrate de estar en http://pos.test';
                 } else {
                     mensaje += error.message;
                 }
                 
                 alert(mensaje);
-
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            });
+            }
         });
 
         // Botón de detectar impresoras
