@@ -378,7 +378,7 @@
             // Recopilar datos del formulario
             const formData = new FormData(this);
 
-            fetch('/guardar-config', {
+            fetch('{{ url("/guardar-config") }}', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,
@@ -386,7 +386,12 @@
                 },
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error del servidor: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Guardado';
@@ -406,8 +411,16 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar configuración: ' + error.message);
+                console.error('Error completo:', error);
+                let mensaje = 'Error al guardar configuración: ';
+                
+                if (error.message.includes('Failed to fetch')) {
+                    mensaje += 'No se puede conectar al servidor. Verifica que Laravel esté ejecutándose.';
+                } else {
+                    mensaje += error.message;
+                }
+                
+                alert(mensaje);
 
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
@@ -422,14 +435,19 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Imprimiendo...';
             btn.disabled = true;
 
-            fetch('/test-print', {
+            fetch('{{ url("/test-print") }}', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error del servidor: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     btn.innerHTML = '<i class="fas fa-check me-2"></i>Enviado';
@@ -445,7 +463,15 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error en la impresión: ' + error.message);
+                let mensaje = 'Error en la impresión: ';
+                
+                if (error.message.includes('Failed to fetch')) {
+                    mensaje += 'No se puede conectar al servidor. Verifica que Laravel esté ejecutándose.';
+                } else {
+                    mensaje += error.message;
+                }
+                
+                alert(mensaje);
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
