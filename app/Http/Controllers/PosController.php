@@ -702,10 +702,11 @@ class PosController extends Controller
         $impresora->setJustification(Printer::JUSTIFY_LEFT);
 
         foreach ($inventario->items as $item) {
-            if (!$item->producto) {
+            $productoModel = $item->productoDirecto;
+            if (!$productoModel) {
                 continue;
             }
-            $producto = Str::of(Str::padRight($item->producto->nombre, 50, '.'))->limit($this->papel);
+            $producto = Str::of(Str::padRight($productoModel->nombre, 50, '.'))->limit($this->papel);
             $impresora->text($producto . "\n");
         }
 
