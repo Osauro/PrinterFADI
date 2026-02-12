@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Inventario;
 use App\Models\Prestamo;
 use App\Models\Transferencia;
 use App\Models\Venta;
@@ -675,6 +676,36 @@ class PosController extends Controller
             $producto = Str::of(Str::padRight($cantidad . $item->producto->nombre, 70, '.'))->limit($this->papel);
             $impresora->text($producto . "\n");
         }
+        $impresora->feed(2);
+        if ($this->cortarAutomatico) {
+            $impresora->cut();
+        }
+        $impresora->close();
+    }
+
+    public function imprimirInventario(Inventario $inventario)
+    {
+        $nombreImpresora = $this->impresora;
+        $conector = new WindowsPrintConnector($nombreImpresora);
+        $impresora = new Printer($conector);
+
+        // Título del inventario
+        $impresora->setJustification(Printer::JUSTIFY_CENTER);
+        $impresora->setTextSize(2, 2);
+        $impresora->text("INVENTARIO #" . $inventario->id . "\n");
+
+        // Productos
+        $impresora->setTextSize(1, 1);
+        $impresora->feed(1);
+        $impresora->text("----PRODUCTOS----\n");
+        $impresora->feed(1);
+        $impresora->setJustification(Printer::JUSTIFY_LEFT);
+
+        foreach ($inventario->items as $item) {
+            $producto = Str::of(Str::padRight($item->producto->nombre, 50, '.'))->limit($this->papel);
+            $impresora->text($producto . "\n");
+        }
+
         $impresora->feed(2);
         if ($this->cortarAutomatico) {
             $impresora->cut();

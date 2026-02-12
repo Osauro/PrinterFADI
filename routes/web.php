@@ -26,3 +26,4 @@ Route::get('/detectar-impresoras', [PosController::class, 'detectarImpresoras'])
 Route::get('/venta/{venta}', [PosController::class, 'imprimirVenta'])->name('venta');
 Route::get('/boleta/{prestamo}', [PosController::class, 'imprimirBoleta'])->name('boleta');
 Route::get('/transferencia/{transferencia}', [PosController::class, 'imprimirTransferencia'])->name('transferencia');
+Route::get('/inventario/{inventario}', [PosController::class, 'imprimirInventario'])->name('inventario');
